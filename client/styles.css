@@ -1,0 +1,366 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    color: #333333;
+    background-color: #F7F7F7;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+/* Map container styles */
+#map-container {
+    position: relative; /* Relative position for the icon-bar */
+    width: 100%; /* Full width */
+    height: 90vh; /* Adjust height as needed */
+}
+/* Optional: Customize the Zoom button */
+.mapboxgl-ctrl-zoom-in, .mapboxgl-ctrl-zoom-out {
+    background-color: #FF385C; /* Match the pink color theme */
+    color: white;
+    border-radius: 4px;
+}
+
+.mapboxgl-ctrl-zoom-in:hover, .mapboxgl-ctrl-zoom-out:hover {
+    background-color: #D93854; /* Darker pink on hover */
+}
+/* Optional: Customize the Fullscreen button (if needed) */
+.mapboxgl-ctrl-fullscreen {
+    background-color: #FF385C; /* Change the background color to match your theme */
+    color: white;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.mapboxgl-ctrl-fullscreen:hover {
+    background-color: #D93854; /* Darker pink on hover */
+}
+
+
+/* Icon bar (Filter Bar) positioned inside the map */
+.icon-bar {
+    display: flex;
+    flex-wrap: wrap; /* Wrap icons on smaller screens */
+    justify-content: center; /* Center the icons */
+    align-items: center; /* Vertically center the icons */
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.5); /* Semi-transparent background */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    position: absolute; /* Position relative to map container */
+    top: 10px; /* Position 10px from the top of the map container */
+    left: 50%; /* Center the bar horizontally */
+    transform: translateX(-50%); /* Ensure proper centering */
+    z-index: 1000; /* Ensure it stays above the map */
+}
+
+
+/* Icon item inside the bar */
+.icon-item {
+    margin: 5px; /* Add space between icons */
+}
+
+/* Icon labels */
+.icon-item label {
+    font-size: 30px; /* Set icon size */
+    cursor: pointer; /* Change cursor to pointer when hovering */
+}
+
+/* Checkbox next to icons */
+.icon-item input[type="checkbox"] {
+    margin-right: 5px; /* Space between checkbox and icon */
+}
+
+/* BUTTON STYLES: Used throughout the page */
+button {
+    background-color: #FF385C; /* Airbnb red for buttons */
+    color: white; /* White text color */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Add padding inside the button */
+    border-radius: 8px; /* Rounded button corners */
+    font-weight: 600; /* Make the text bold */
+    cursor: pointer; /* Show pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth background color transition */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+}
+
+button:hover {
+    background-color: #D93854; /* Darker red on hover */
+}
+
+/* DETAILS PANEL STYLES: Slide-out panel for farm details */
+#details-panel {
+    position: fixed; /* Fixed on the side of the viewport */
+    top: 0; /* Start from the top */
+    right: 0; /* Align to the right */
+    width: 33%; /* Take up 33% of the screen width */
+    height: 100vh; /* Full viewport height */
+    background: white; /* White background */
+    padding: 20px; /* Padding inside the panel */
+    display: none; /* Initially hidden */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+    transform: translateX(100%); /* Start off-screen */
+    transition: transform 0.3s ease-in-out; /* Smooth slide-in transition */
+    z-index: 9999; /* Make sure it's above other elements */
+}
+
+/* Active class to slide the panel in */
+#details-panel.active {
+    transform: translateX(0); /* Slide the panel into view */
+}
+
+/* Close button for the slide-out panel */
+.close-slide-out {
+    font-size: 24px; /* Size of the close icon */
+    cursor: pointer; /* Pointer cursor on hover */
+    padding: 5px; /* Padding around the icon */
+    color: #333; /* Darker color for the icon */
+}
+
+.close-slide-out:hover {
+    color: #000; /* Black color on hover */
+}
+
+/* POPUP STYLES: For the map's popups */
+.popup-container {
+    position: relative; /* Relative to allow positioning inside */
+    background: white; /* White background */
+    padding: 1px; /* Padding inside the popup */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+    width: 300px; /* Fixed width for the popup */
+    font-family: 'Inter', sans-serif; /* Font family for the text */
+}
+
+/* Ensure popup images are uniform in size */
+.popup-container img {
+    width: 100%; /* Full width of the popup container */
+    height: 200px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensures image fills the area and maintains aspect ratio */
+    border-radius: 10px; /* Optional: Rounded corners */
+    display: block; /* Prevents inline display issues */
+}
+
+
+/* Popup info section */
+.popup-info {
+    padding: 10px; /* Padding inside the info section */
+    background-color: white; /* Background for the info section */
+}
+
+.popup-info h3 {
+    margin: 0; /* Remove margin */
+    font-size: 18px; /* Font size for the title */
+    font-weight: 600; /* Bold text */
+    color: #333333; /* Dark text color */
+    margin-bottom: 10px; /* Space below the title */
+}
+
+.popup-info p {
+    margin: 5px 0; /* Spacing for paragraphs */
+    font-size: 14px; /* Font size for text */
+    color: #666666; /* Light gray text */
+}
+
+/* Links inside the popup */
+.popup-info a {
+    color: #FF385C; /* Airbnb red */
+    text-decoration: none; /* No underline */
+    font-weight: 600; /* Bold text */
+}
+
+.popup-info a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Carousel container */
+.details-carousel {
+    position: relative; /* Allows button positioning */
+}
+
+/* Ensure carousel images are uniform in size */
+.details-carousel img {
+    width: 100%; /* Full width of the carousel container */
+    max-width: 100%; /* Prevent image from exceeding the container's width */
+    height: 250px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensures the image covers the area without distortion */
+    border-radius: 10px; /* Rounded corners */
+    margin-bottom: 10px; /* Space below the image */
+    display: block; /* Ensures no inline display issues */
+}
+
+/* Ensures the carousel itself doesn't affect the image sizing */
+.carousel-slide {
+    display: none; /* Hide all slides by default */
+    max-width: 100%; /* Ensure the carousel doesn’t cause resizing issues */
+}
+
+.carousel-slide.active {
+    display: block; /* Show the active slide */
+}
+/* Carousel navigation buttons */
+.prev, .next {
+    position: absolute; /* Position buttons over the image */
+    top: 40%; /* Vertically center the buttons */
+    transform: translateY(-50%); /* Perfect vertical centering */
+    width: auto; /* Auto width for buttons */
+    padding: 6px; /* Padding inside the buttons */
+    color: white; /* White text */
+    font-weight: bold; /* Bold text */
+    font-size: 10px; /* Button font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    background-color: rgba(156, 153, 153, 0.5); /* Semi-transparent background */
+    border: none; /* No border */
+    border-radius: 50%; /* Circular buttons */
+    z-index: 10; /* Ensure buttons are above other content */
+}
+
+.prev {
+    left: 10px; /* Position the 'prev' button on the left */
+}
+
+.next {
+    right: 10px; /* Position the 'next' button on the right */
+}
+
+.prev:hover, .next:hover {
+    background-color: #FF385C; /* Darker background on hover */
+}
+
+.popup-close {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    background: none; /* No background for the close button */
+    border: none; /* No border */
+    font-size: 24px; /* Size of the X icon */
+    color: #FF385C; /* Pink color for the X button */
+    transition: color 0.3s ease; /* Smooth transition for color changes */
+}
+
+.popup-close:hover {
+    color: #D93854; /* Darker pink on hover */
+}
+/* MAPBOX POPUP CONTENT */
+.mapboxgl-popup-content {
+    padding: 0; /* Remove padding */
+}
+
+
+/* About Us section styles */
+.about-container {
+    display: flex; /* Flexbox for centering content */
+    flex-direction: column; /* Stack content vertically */
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically */
+    padding: 20px; /* Padding inside the section */
+    max-width: 800px; /* Maximum width for the section */
+    margin: 50px auto; /* Center the section and add top/bottom margin */
+    text-align: center; /* Center the text */
+}
+
+/* About Us Image */
+.about-image {
+    width: 100%; /* Full width of container */
+    max-width: 600px; /* Limit the size of the image */
+    border-radius: 0%; /* Make the image circular */
+    margin-bottom: 20px; /* Add space below the image */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Bio text styling */
+.about-bio h2 {
+    font-size: 28px; /* Larger heading for the bio */
+    margin-bottom: 15px; /* Space below the heading */
+    color: #333; /* Dark text color */
+}
+
+.about-bio p {
+    font-size: 18px; /* Larger text for bio paragraphs */
+    line-height: 1.6; /* Increase line spacing for readability */
+    color: #666; /* Light gray text color */
+    margin: 0; /* Remove default margin */
+}
+
+.landing-section {
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-image: url('images/Cover/Cover.JPG'); /* Replace with the path to your image */
+    background-size: cover; /* Ensure the image covers the section */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-attachment: fixed; /* Keep the image fixed while scrolling */
+    color: white; /* Make text white for contrast */
+}
+
+
+.landing-section h1 {
+    font-size: 3em; /* Large heading size */
+    margin-bottom: 20px; /* Space below the heading */
+}
+.landing-section h1, .landing-section p {
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background for text */
+    padding: 10px; /* Add padding around the text */
+    border-radius: 8px; /* Rounded corners for a cleaner look */
+}
+.landing-section p {
+    font-size: 1.2em; /* Paragraph text size */
+    margin-bottom: 40px; /* Space below the paragraph */
+}
+
+.landing-section button {
+    padding: 10px 20px; /* Padding inside the button */
+    font-size: 1.2em; /* Larger text size */
+    background-color: #FF385C; /* Airbnb red */
+    color: white; /* White text */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth color transition */
+}
+
+.landing-section button:hover {
+    background-color: #D93854; /* Darker red on hover */
+}
+
+/* Map section with white space */
+.map-section {
+    display: flex; /* Flexbox to center content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    padding: 40px 20px; /* Padding around the map */
+    background-color: #f7f7f7; /* Light background */
+}
+/* Map element */
+#map {
+    width: 90%;      /* Adjust to 90% of the container width */
+    height: 90vh;    /* Set height to 90% of the viewport */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    margin: 0 auto;  /* Center the map horizontally */
+}
+/* Minimal Footer Styles */
+.site-footer {
+    background-color: transparent; /* No background for minimal design */
+    text-align: left; /* Center the content */
+    padding: 10px 80px; /* Add space at the top and bottom of the footer */
+    width: 100%;
+    position: relative;
+}
+
+.footer-content a {
+    color: #FF385C; /* Pink color for the links */
+    margin: 0 10px; /* Space between the links */
+    text-decoration: none; /* Remove underline */
+    font-size: 1.2em; /* Slightly larger font size */
+    
+}
+
+.footer-content a:hover {
+    text-decoration: underline; /* Underline links on hover */
+}

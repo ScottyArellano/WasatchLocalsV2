@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wasatch Locals Map</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.css" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css"> <!-- Link your external CSS -->
+</head>
+<body>
+
+    <!-- Landing section (above the fold) -->
+    <div class="landing-section">
+        <h1>Welcome to Wasatch Homegrown</h1>
+        <p>Discover local growers and makers near you.</p>
+        <!-- Optional button to scroll to the map -->
+        <button onclick="scrollToMap()">See the Map</button>
+    </div>
+
+    <!-- Map section (below the fold) -->
+    <div class="map-section" id="map-container">
+        <div id="map"></div>
+
+        <div class="icon-bar">
+            <!-- Checkboxes for filtering products -->
+            <div class="icon-item">
+                <input type="checkbox" id="beef" name="beef" checked>
+                <label for="beef">🐄</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="dairy" name="dairy" checked>
+                <label for="dairy">🧀</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="Meat chicken" name="Meat chicken" checked>
+                <label for="Meat chicken">🐓</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="eggs" name="eggs" checked>
+                <label for="eggs">🥚</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="pork" name="pork" checked>
+                <label for="pork">🐖</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="veggies" name="veggies" checked>
+                <label for="veggies">🥦</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="fruit" name="fruit" checked>
+                <label for="fruit">🍎</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="Home Made" name="Home Made" checked>
+                <label for="Home Made">🧼</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="Baked Goods" name="Baked Goods" checked>
+                <label for="Baked Goods">🧁</label>
+            </div>
+            <div class="icon-item">
+                <input type="checkbox" id="other" name="other" checked>
+                <label for="other">🌼</label>
+            </div>
+        </div>
+
+        <div id="details-panel">
+            <!-- Details content will be dynamically inserted here -->
+        </div>
+    </div>
+
+        <!-- Add this at the bottom of your HTML file, before the closing </body> tag -->
+<footer class="site-footer">
+    <div class="footer-content">
+        <a href="about.html">About Us</a> <!-- Link to your About Us page -->
+        <!-- Add the email link -->
+        <span>Drop us a line: <a href="mailto:scotty@terestrial.com">scotty@terestrial.com</a></span>
+    </div>
+        
+    </div>
+</footer>
+
+    <!-- Load external JS files -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js"></script>
+    <!-- Main script that initializes the map and modules -->
+    <script type="module" src="main.js"></script>
+    <script type="module" src="test.js"></script>
+
+    <!-- Smooth scroll script -->
+    <script>
+        function scrollToMap() {
+            document.getElementById('map-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
