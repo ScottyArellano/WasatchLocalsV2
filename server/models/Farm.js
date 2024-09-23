@@ -17,4 +17,6 @@ const farmSchema = new mongoose.Schema({
   photos: [String],
 });
 
-module.exports = mongoose.model('Farm', farmSchema);
+const Farm = mongoose.model('Farm', farmSchema);
+
+module.exports = Farm; // Ensure this line exports the model
