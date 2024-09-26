@@ -15,11 +15,12 @@ let farms = [];
 let markers = [];
 
 // Fetch farms data from the API
-fetch('http://localhost:5001/api/farms')
-  .then((response) => response.json())
-  .then((data) => {
-    farms = data;
-    markers = addMarkers(map, farms);
+fetch('http://localhost:5002/api/farms')
+  .then(response => response.json())
+  .then(data => {
+    farms = data; // Store the farm data
+    markers = addMarkers(map, farms); // Add markers to the map
+  
 
     // Event listener for checkbox filtering
     document.querySelectorAll('.icon-item input').forEach((input) => {

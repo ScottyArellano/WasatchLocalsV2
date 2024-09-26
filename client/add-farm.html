@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Your Farm</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your existing CSS file -->
+</head>
+<body>
+    <div class="form-container">
+        <h1>Add Your Farm</h1>
+
+        <!-- Farm submission form -->
+        <form id="createFarmForm">
+            <label for="name">Farm Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="location">Location (Longitude, Latitude):</label>
+            <input type="text" id="location" name="location" placeholder="-111.842,40.760" required>
+
+            <label for="products">Products (comma-separated):</label>
+            <input type="text" id="products" name="products" placeholder="Eggs, Veggies" required>
+
+            <label for="bio">Bio:</label>
+            <textarea id="bio" name="bio" required></textarea>
+
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone">
+
+            <label for="website">Website:</label>
+            <input type="url" id="website" name="website">
+
+            <label for="photos">Photos (comma-separated URLs):</label>
+            <input type="text" id="photos" name="photos">
+
+            <button type="submit">Submit Farm</button>
+        </form>
+
+        <!-- Back link to return to the main page -->
+        <p><a href="index.html">Back to Map</a></p>
+    </div>
+
+    <!-- Include your main.js file to handle form submission -->
+    <script src="addFarm.js"></script>
+</body>
+</html>
