@@ -71,21 +71,27 @@ body, html {
     margin-right: 5px; /* Space between checkbox and icon */
 }
 
-/* BUTTON STYLES: Used throughout the page */
+/* Button Hover Animation */
 button {
-    background-color: #FF385C; /* Airbnb red for buttons */
-    color: white; /* White text color */
-    border: none; /* Remove border */
-    padding: 10px 20px; /* Add padding inside the button */
-    border-radius: 8px; /* Rounded button corners */
-    font-weight: 600; /* Make the text bold */
-    cursor: pointer; /* Show pointer cursor on hover */
-    transition: background-color 0.3s ease; /* Smooth background color transition */
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+    background-color: #FF385C;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
-    background-color: #D93854; /* Darker red on hover */
+    background-color: #D93854;
+    transform: translateY(-3px); /* Slight lift on hover */
+}
+
+/* Active Button State */
+button:active {
+    transform: translateY(0); /* Reset on click */
 }
 
 /* DETAILS PANEL STYLES: Slide-out panel for farm details */
@@ -398,16 +404,3 @@ textarea {
     height: 150px; /* Increase the size of the bio form */
 }
 
-/* Submit button styling */
-button {
-    padding: 10px 20px;
-    background-color: #FF385C;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #D93854;
-}

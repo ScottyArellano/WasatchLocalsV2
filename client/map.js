@@ -15,6 +15,18 @@ export function initMap() {
         touchZoomRotate: false,
         doubleClickZoom: false
     });
+
+    // Add geolocation control to the map
+    map.addControl(
+        new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true,
+            showUserHeading: true
+        })
+    );
+
     return map;
 }
 
