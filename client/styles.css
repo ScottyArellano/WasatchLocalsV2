@@ -364,3 +364,50 @@ button:hover {
 .footer-content a:hover {
     text-decoration: underline; /* Underline links on hover */
 }
+
+
+/* Form container */
+form {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    margin: 0 auto; /* Center the form */
+}
+
+/* Align each form group neatly */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="url"], input[type="number"], textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%; /* Make the input fields full width */
+}
+
+/* Adjust bio textarea size */
+textarea {
+    height: 150px; /* Increase the size of the bio form */
+}
+
+/* Submit button styling */
+button {
+    padding: 10px 20px;
+    background-color: #FF385C;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #D93854;
+}
