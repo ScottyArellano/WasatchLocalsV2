@@ -15,7 +15,7 @@ let farms = [];
 let markers = [];
 
 // Fetch farms data from the API
-fetch('http://localhost:5002/api/farms')
+fetch('https://wasatch-homegrown.onrender.com/api/farms')
   .then(response => response.json())
   .then(data => {
     farms = data; // Store the farm data

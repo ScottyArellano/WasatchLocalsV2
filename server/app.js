@@ -17,7 +17,8 @@ const PORT = process.env.PORT || 5002;
 
 // Middleware
 
-app.use(cors()); // Allow all origins
+
+app.use(cors({ origin: 'https://wasatch-homegrown.onrender.com' }));  // Allow CORS from your frontend
 app.use(express.json()); // To parse JSON request bodies
 
 // MongoDB Connection
