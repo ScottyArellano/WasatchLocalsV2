@@ -6,6 +6,7 @@ const Farm = require('./models/Farm');
 const bcrypt = require('bcryptjs'); // For password hashing
 const jwt = require('jsonwebtoken'); // For generating JWT
 const User = require('./models/user');
+const path = require('path');
 const { check, validationResult } = require('express-validator'); // For validating user inputs
 
 
