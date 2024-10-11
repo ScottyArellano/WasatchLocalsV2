@@ -26,6 +26,15 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Handle root URL '/' - serve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));  // Adjust if needed
+});
+
+
 
 // POST route to register a new user
 app.post('/api/auth/signup', [
