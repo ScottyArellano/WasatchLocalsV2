@@ -1,70 +1,55 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const dotenv = require('dotenv');
-const Farm = require('./models/Farm');
-const bcrypt = require('bcryptjs'); // For password hashing
-const jwt = require('jsonwebtoken'); // For generating JWT
-const User = require('./models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const path = require('path');
-const { check, validationResult } = require('express-validator'); // For validating user inputs
-const auth = require('./middleware/auth'); // Import the JWT auth middleware
+const cors = require('cors');
+const { check, validationResult } = require('express-validator');
 
-dotenv.config(); // Loading environment variables
+const Farm = require('./models/Farm');
+const User = require('./models/user');
+const auth = require('./middleware/auth');
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5500;
 
 // Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
-
-
-// Add '*' to allow all origins (use with caution)
-app.use(cors({
-    origin: '*', // Allows all origins
-  }));
-
-app.use(express.json()); // To parse JSON request bodies
-
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('MongoDB connection error:', error));
 
-
 // Routes
-
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '../public')));
-
-// Handle root URL '/' - serve index.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));  // Adjust if needed
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// POST route to register a new user
+// User signup route
 app.post('/api/auth/signup', [
   check('name', 'Name is required').not().isEmpty(),
   check('email', 'Please include a valid email').isEmail(),
   check('password', 'Password must be 6 or more characters').isLength({ min: 6 })
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const { name, email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+    if (user) return res.status(400).json({ message: 'User already exists' });
 
     user = new User({ name, email, password });
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
-
     await user.save();
 
     const payload = { user: { id: user.id } };
@@ -72,105 +57,77 @@ app.post('/api/auth/signup', [
 
     res.status(201).json({ token });
   } catch (error) {
-    console.error('Error registering user:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// POST route to log in a user
+// User login route
 app.post('/api/auth/login', [
   check('email', 'Please include a valid email').isEmail(),
   check('password', 'Password is required').exists()
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const { email, password } = req.body;
 
   try {
     let user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const payload = { user: { id: user.id } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({ token });
   } catch (error) {
-    console.error('Error logging in user:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// POST route to create a new farm (protected route)
+// Farm routes
 app.post('/api/farms', auth, async (req, res) => {
   try {
-    const { name, location, products, bio, phone, website, photos } = req.body;
-
-    const newFarm = new Farm({ name, location, products, bio, phone, website, photos });
+    const newFarm = new Farm(req.body);
     const savedFarm = await newFarm.save();
-
     res.status(201).json(savedFarm);
   } catch (error) {
-    console.error('Error creating farm:', error);
     res.status(500).json({ message: 'Failed to create farm' });
   }
 });
 
-// GET route to fetch all farms
 app.get('/api/farms', async (req, res) => {
   try {
     const farms = await Farm.find();
     res.json(farms);
   } catch (error) {
-    console.error('Error fetching farms:', error);
     res.status(500).json({ message: 'Failed to fetch farms' });
   }
 });
 
-// PUT route to update a farm by ID
 app.put('/api/farms/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, location, products, bio, phone, website, photos } = req.body;
-
-    const updatedFarm = await Farm.findByIdAndUpdate(id, { name, location, products, bio, phone, website, photos }, { new: true, runValidators: true });
-
-    if (!updatedFarm) {
-      return res.status(404).json({ message: 'Farm not found' });
-    }
-
+    const updatedFarm = await Farm.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!updatedFarm) return res.status(404).json({ message: 'Farm not found' });
     res.status(200).json(updatedFarm);
   } catch (error) {
-    console.error('Error updating farm:', error);
     res.status(500).json({ message: 'Failed to update farm' });
   }
 });
 
-// DELETE route to delete a farm by ID
 app.delete('/api/farms/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const deletedFarm = await Farm.findByIdAndDelete(id);
-    if (!deletedFarm) {
-      return res.status(404).json({ message: 'Farm not found' });
-    }
-    res.status(200).json({ message: 'Farm deleted successfully', deletedFarm });
+    const deletedFarm = await Farm.findByIdAndDelete(req.params.id);
+    if (!deletedFarm) return res.status(404).json({ message: 'Farm not found' });
+    res.status(200).json({ message: 'Farm deleted successfully' });
   } catch (error) {
-    console.error('Error deleting farm:', error);
     res.status(500).json({ message: 'Failed to delete farm' });
   }
 });
 
-// Server Listener
+// ONLY ONE SERVER LISTENER!
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -1,22 +1,17 @@
-// server/models/Farm.js
-
 const mongoose = require('mongoose');
 
 const farmSchema = new mongoose.Schema({
-  id: Number,
-  name: String,
-  location: {
-    type: [Number], // [longitude, latitude]
-    required: true,
-    index: '2dsphere', // For geospatial queries
-  },
-  products: [String],
-  bio: String,
-  phone: String,
+  name: { type: String, required: true },
+  products: { type: [String], required: true },
+  bio: { type: String, required: true },
+  phone: { type: String, required: true },
+  email: { type: String, required: true },
   website: String,
+  hours: String,
+  isApproved: { type: Boolean, default: false },
   photos: [String],
 });
 
-const Farm = mongoose.model('Farm', farmSchema);
+farmSchema.index({ location: '2dsphere' }); // For geospatial queries
 
-module.exports = Farm; // Ensure this line exports the model
+module.exports = mongoose.model('Farm', farmSchema);

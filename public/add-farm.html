@@ -4,43 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Your Farm</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your existing CSS file -->
+    <link rel="stylesheet" href="styles.css"> <!-- Link your external CSS -->
 </head>
 <body>
-    <div class="form-container">
-        <h1>Add Your Farm</h1>
+    <h1>Submit Your Farm</h1>
+    
+    <form id="farmForm">
+        <!-- Farm Name -->
+        <label for="name">Farm Name:</label>
+        <input type="text" id="name" name="name" required>
+        
+        <!-- Location -->
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" required>
 
-        <!-- Farm submission form -->
-        <form id="createFarmForm">
-            <label for="name">Farm Name:</label>
-            <input type="text" id="name" name="name" required>
+        <!-- Products Sold (Checkboxes for predefined categories with emojis) -->
+        <label>Products Sold:</label>
+        <div>
+            <input type="checkbox" id="beef" name="products" value="Beef">
+            <label for="beef">🐄 Beef</label>
 
-            <label for="location">Location (Longitude, Latitude):</label>
-            <input type="text" id="location" name="location" placeholder="-111.842,40.760" required>
+            <input type="checkbox" id="dairy" name="products" value="Dairy">
+            <label for="dairy">🧀 Dairy</label>
 
-            <label for="products">Products (comma-separated):</label>
-            <input type="text" id="products" name="products" placeholder="Eggs, Veggies" required>
+            <input type="checkbox" id="chicken" name="products" value="Chicken">
+            <label for="chicken">🐓 Chicken</label>
 
-            <label for="bio">Bio:</label>
-            <textarea id="bio" name="bio" required></textarea>
+            <input type="checkbox" id="eggs" name="products" value="Eggs">
+            <label for="eggs">🥚 Eggs</label>
 
-            <label for="phone">Phone:</label>
-            <input type="text" id="phone" name="phone">
+            <input type="checkbox" id="pork" name="products" value="Pork">
+            <label for="pork">🐖 Pork</label>
 
-            <label for="website">Website:</label>
-            <input type="url" id="website" name="website">
+            <input type="checkbox" id="veggies" name="products" value="Vegetables">
+            <label for="veggies">🥦 Vegetables</label>
 
-            <label for="photos">Photos (comma-separated URLs):</label>
-            <input type="text" id="photos" name="photos">
+            <input type="checkbox" id="fruit" name="products" value="Fruit">
+            <label for="fruit">🍎 Fruit</label>
 
-            <button type="submit">Submit Farm</button>
-        </form>
+            <input type="checkbox" id="homeMade" name="products" value="Home Made">
+            <label for="homeMade">🧼 Home Made</label>
 
-        <!-- Back link to return to the main page -->
-        <p><a href="index.html">Back to Map</a></p>
-    </div>
+            <input type="checkbox" id="bakedGoods" name="products" value="Baked Goods">
+            <label for="bakedGoods">🧁 Baked Goods</label>
 
-    <!-- Include your main.js file to handle form submission -->
-    <script src="addFarm.js"></script>
+            <input type="checkbox" id="other" name="products" value="Other">
+            <label for="other">🌼 Other</label>
+        </div>
+
+        <!-- Farm Bio -->
+        <label for="bio">Farm Description/Bio:</label>
+        <textarea id="bio" name="bio" rows="4" required></textarea>
+
+        <!-- Contact Information -->
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" required>
+        
+        <label for="email">Email:</label>
+<input type="email" id="email" name="email" autocomplete="email" required>  
+        
+        <!-- Website -->
+        <label for="website">Website:</label>
+        <input type="url" id="website" name="website">
+
+        <!-- Operating Hours (Optional) -->
+        <label for="hours">Operating Hours (Optional):</label>
+        <input type="text" id="hours" name="hours">
+        
+        <!-- CAPTCHA -->
+        <label for="captcha">Please enter "1234" to confirm you're human:</label>
+        <input type="text" id="captcha" name="captcha" required>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script src="add-farm.js"></script>
 </body>
 </html>

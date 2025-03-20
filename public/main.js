@@ -22,7 +22,7 @@ let markers = [];
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 const apiUrl = isLocalhost
-  ? 'http://localhost:5002/api/farms'   // Local development API URL
+  ? 'http://localhost:5500/api/farms'   // Local development API URL
   : 'https://wasatch-homegrown.onrender.com/api/farms';  // Production API URL
 
 fetch(apiUrl, {
