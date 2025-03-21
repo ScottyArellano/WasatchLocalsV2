@@ -18,7 +18,9 @@
   },
   "devDependencies": {
     "mocha": "^10.7.3",
-    "nodemon": "^3.1.7",
+    "nodemon": "^3.1.9",
     "sinon": "^19.0.2"
   }
-}
+
+  }
+
