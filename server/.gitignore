@@ -1,14 +1,6 @@
-# Node.js
 node_modules/
 .env
-
-# Logs
+.DS_Store
 logs
 *.log
 npm-debug.log*
-
-# MacOS
-.DS_Store
-
-# Other
-*.env
