@@ -1,5 +1,6 @@
-import { filterFarms } from '../client/filter.js';
-import assert from 'assert';
+import { filterFarms } from '../filter.js';;
+import assert from 'assert'; // works if you're running this in Node.js
+
 
 describe('filterFarms Tests', () => {
     // Test 1: Filter by a single product "veggies"
