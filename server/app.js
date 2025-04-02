@@ -17,9 +17,13 @@ const app = express();
 const PORT = process.env.PORT || 5500;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Change to frontend URL when deploying: 'https://yourfrontend.com'
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI)

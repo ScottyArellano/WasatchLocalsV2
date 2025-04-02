@@ -297,7 +297,7 @@ button:active {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-image: url('images/Cover/Cover.JPG'); /* Replace with the path to your image */
+    background-image: url('/images/Cover/Cover.JPG'); /* Replace with the path to your image */
     background-size: cover; /* Ensure the image covers the section */
     background-position: center; /* Center the image */
     background-repeat: no-repeat; /* Prevent the image from repeating */
