@@ -92,7 +92,9 @@ app.post('/api/auth/login', [
 });
 
 // Farm routes
-app.post('/api/farms', auth, async (req, res) => {
+// ✅ NEW: No auth required for submissions
+app.post('/api/farms', async (req, res) => {
+
   try {
     const newFarm = new Farm(req.body);
     const savedFarm = await newFarm.save();
