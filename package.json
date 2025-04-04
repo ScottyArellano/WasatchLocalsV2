@@ -1,8 +1,9 @@
 {
-    "name": "wasatchlocals",
+    "name": "wasatchlocals-root",
     "version": "1.0.0",
     "scripts": {
-      "build": "cd client && npm install && npm run build",
-      "start": "cd server && npm install && node app.js"
+      "dev": "npm run dev --prefix client",
+      "build": "npm run build --prefix client",
+      "start": "npm run start --prefix server"
     }
   }

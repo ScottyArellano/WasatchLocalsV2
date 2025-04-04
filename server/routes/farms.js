@@ -1,30 +1,30 @@
-// routes/farm.js
-
 const express = require('express');
 const router = express.Router();
 const Farm = require('../models/Farm');
-const axios = require('axios');
-
-
 
 // POST route to handle farm submissions
-router.post('/farms', async (req, res) => { // Changed to router.post and path '/farms'
+router.post('/farms', async (req, res) => {
     try {
-        console.log('Received farm data:', req.body); // Log incoming data
+        console.log('Received farm data:', req.body);
 
-        const { name, location, products, bio, phone, email, website, hours, captcha } = req.body;
+        let { name, location, products, bio, phone, email, website, hours, captcha } = req.body;
 
         // Validate required fields
         if (!name || !location || !products || !bio || !phone || !email) {
             return res.status(400).json({ message: 'All required fields must be provided.' });
         }
 
-        // Validate CAPTCHA
+        // CAPTCHA check (temporary logic – replace with real reCAPTCHA later)
         if (captcha !== '1234') {
             return res.status(400).json({ message: 'Invalid CAPTCHA.' });
         }
 
-        // Create new farm object
+        // Normalize website: add https:// if missing
+        if (website && !/^https?:\/\//i.test(website)) {
+            website = 'https://' + website;
+        }
+
+        // Create new farm
         const newFarm = new Farm({
             name,
             location,
@@ -34,13 +34,16 @@ router.post('/farms', async (req, res) => { // Changed to router.post and path '
             email,
             website,
             hours,
-            isApproved: false,
+            isApproved: false, // default: not approved
         });
 
-        // Save to database
         const savedFarm = await newFarm.save();
 
-        res.status(201).json({ message: 'Farm submitted successfully. Awaiting approval.', farm: savedFarm });
+        res.status(201).json({
+            message: 'Farm submitted successfully. Awaiting approval.',
+            farm: savedFarm
+        });
+
     } catch (error) {
         console.error('Error creating farm:', error);
         res.status(500).json({ message: 'Failed to create farm', error: error.message });
@@ -62,19 +65,18 @@ router.get('/farms/:id', getFarm, (req, res) => {
     res.json(res.farm);
 });
 
-// Middleware function to get farm by ID
+// Middleware to get a farm by ID
 async function getFarm(req, res, next) {
-    let farm;
     try {
-        farm = await Farm.findById(req.params.id);
-        if (farm == null) {
+        const farm = await Farm.findById(req.params.id);
+        if (!farm) {
             return res.status(404).json({ message: 'Cannot find farm' });
         }
+        res.farm = farm;
+        next();
     } catch (err) {
-        return res.status(500).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
-    res.farm = farm;
-    next();
 }
 
 module.exports = router;

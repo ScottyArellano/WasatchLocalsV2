@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="/src/styles.css"> <!-- Link your external CSS -->
 </head>
 <body>
+    <div id="app">
+        <!-- landing section, map, etc. goes here -->
+      
 
     <!-- Landing section (above the fold) -->
     <div class="landing-section">
@@ -73,12 +76,56 @@
         </div>
     </div>
 
+    <!-- Add Farm SPA Section (initially hidden) -->
+<section id="add-farm-section" style="display: none;">
+    <h2>Add Your Farm</h2>
+    <form id="farmForm">
+      <input type="text" name="name" placeholder="Farm Name" required />
+      <input type="text" name="address" placeholder="Farm Address" required />
+      <textarea name="bio" placeholder="Farm Description"></textarea>
+      <input type="text" name="products" placeholder="Products (comma-separated)" required />
+      <input type="email" name="email" placeholder="Email" />
+      <input type="text" name="phone" placeholder="Phone" />
+      <input type="url" name="website" placeholder="Website" />
+      <button type="submit">Submit</button>
+    </form>
+    <div id="formMessage"></div>
+  </section>
+
+  <!-- About Us SPA Section (initially hidden) -->
+<section id="about-section" style="display: none;">
+    <div class="about-container">
+      <img src="images/about/us.jpg" alt="Our Team" class="about-image">
+      <div class="about-bio">
+        <h2>About Us</h2>
+        <p>Moome was founded by a passionate couple dedicated to supporting local farms, homesteads, and makers. After rescuing our boy Moose, later nicknamed Moo-Me, we started one of our first homestead projects — feeding him raw food.</p>
+        <p>At the time, we lived in an apartment and longed for a simpler life, out on some land. A few years later, we found ourselves raising 60+ meat chickens a year while collecting thousands of eggs from our layers.</p>
+        <p>We wanted a marketplace where we could offer our 100% pasture-raised products to our local community, while supporting others making and growing amazing food. And that is why we started Moome.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
 <!-- Add this link before the closing </footer> tag in index.html -->
 <div class="footer-content">
-    <a href="about.html">About Us</a>
-    <a href="add-farm.html" class="add-farm-link">Add Your Farm</a> <!-- Link to the new form page -->
+    <a href="#" data-route="home">Home</a>
+    <a href="#" data-route="about">About Us</a>
+    <a href="#" data-route="add-farm">Add Your Farm</a>
+    <a href="#" data-route="admin">Admin</a>
+    <!-- Secret Admin Login Button -->
+    <button id="admin-login-button" style="display: none;">🔑 Admin Login</button>
+
     <span>Drop us a line: <a href="mailto:scotty@terestrial.com">scotty@terestrial.com</a></span>
+    <!-- Admin SPA Section (initially hidden) -->
+<section id="admin-section" style="display: none;">
+    <h2>Admin Dashboard</h2>
+    <div id="admin-list">Loading...</div>
+  </section>
 </div>
+
+  
+
+  
 
     <!-- Load external JS files -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js"></script>

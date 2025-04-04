@@ -16,26 +16,36 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5500;
 
+// ======================
 // Middleware
+// ======================
 app.use(cors({
-  origin: '*', // Change to frontend URL when deploying: 'https://yourfrontend.com'
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
+// ======================
 // MongoDB connection
+// ======================
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((error) => console.error('MongoDB connection error:', error));
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((error) => console.error('❌ MongoDB connection error:', error));
 
-// Routes
+// ======================
+// Serve frontend
+// ======================
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-// User signup route
+// ======================
+// AUTH ROUTES
+// ======================
+
+// Signup
 app.post('/api/auth/signup', [
   check('name', 'Name is required').not().isEmpty(),
   check('email', 'Please include a valid email').isEmail(),
@@ -50,10 +60,10 @@ app.post('/api/auth/signup', [
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
-    user = new User({ name, email, password });
-
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user = new User({ name, email, password: hashedPassword });
     await user.save();
 
     const payload = { user: { id: user.id } };
@@ -65,7 +75,7 @@ app.post('/api/auth/signup', [
   }
 });
 
-// User login route
+// Login
 app.post('/api/auth/login', [
   check('email', 'Please include a valid email').isEmail(),
   check('password', 'Password is required').exists()
@@ -76,7 +86,7 @@ app.post('/api/auth/login', [
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -91,10 +101,12 @@ app.post('/api/auth/login', [
   }
 });
 
-// Farm routes
-// ✅ NEW: No auth required for submissions
-app.post('/api/farms', async (req, res) => {
+// ======================
+// FARM ROUTES
+// ======================
 
+// Submit new farm (public)
+app.post('/api/farms', async (req, res) => {
   try {
     const newFarm = new Farm(req.body);
     const savedFarm = await newFarm.save();
@@ -104,6 +116,7 @@ app.post('/api/farms', async (req, res) => {
   }
 });
 
+// Get all farms
 app.get('/api/farms', async (req, res) => {
   try {
     const farms = await Farm.find();
@@ -113,9 +126,29 @@ app.get('/api/farms', async (req, res) => {
   }
 });
 
+// Approve farm (admin)
+app.patch('/api/farms/:id/approve', async (req, res) => {
+  try {
+    const farm = await Farm.findByIdAndUpdate(
+      req.params.id,
+      { isApproved: true },
+      { new: true }
+    );
+    if (!farm) return res.status(404).json({ message: 'Farm not found' });
+    res.json(farm);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to approve farm' });
+  }
+});
+
+// Update farm
 app.put('/api/farms/:id', async (req, res) => {
   try {
-    const updatedFarm = await Farm.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const updatedFarm = await Farm.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
     if (!updatedFarm) return res.status(404).json({ message: 'Farm not found' });
     res.status(200).json(updatedFarm);
   } catch (error) {
@@ -123,6 +156,7 @@ app.put('/api/farms/:id', async (req, res) => {
   }
 });
 
+// Delete farm
 app.delete('/api/farms/:id', async (req, res) => {
   try {
     const deletedFarm = await Farm.findByIdAndDelete(req.params.id);
@@ -133,7 +167,9 @@ app.delete('/api/farms/:id', async (req, res) => {
   }
 });
 
-// ONLY ONE SERVER LISTENER!
+// ======================
+// Start server
+// ======================
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
