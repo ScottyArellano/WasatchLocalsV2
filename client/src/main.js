@@ -1,10 +1,26 @@
 import { initMap, addMarkers, removeMarkers } from './map.js';
 import { filterFarms } from './filter.js';
+import mapboxgl from 'mapbox-gl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2NvdHR5MzMiLCJhIjoiY20wbGowZnUzMDY2MTJxb3JjaWJ2dGFwNSJ9.56ueUqG22q5Qzp0FSr8YAA';
+
+const geocoder = new MapboxGeocoder({
+  accessToken: mapboxgl.accessToken,
+  types: 'address',
+  placeholder: 'Enter your farm address',
+  mapboxgl: mapboxgl,
+});
+geocoder.addTo('#geocoder');
+
+geocoder.on('result', (e) => {
+  const coords = e.result.center;
+  document.getElementById('address-coordinates').value = JSON.stringify(coords);
+});
 
 let map = initMap();
 let allFarms = [];
 
-// Load farms from backend and update map
 async function loadFarms() {
   try {
     const res = await fetch('/api/farms');
@@ -16,26 +32,35 @@ async function loadFarms() {
   }
 }
 
-// Initial load
-loadFarms();
-
-// Filter and render map
 function updateMap() {
   const selected = Array.from(document.querySelectorAll('input[type=checkbox]:checked'))
-    .map(cb => cb.id.toLowerCase());
+  .map(cb => cb.value.toLowerCase().trim());
+  console.log('[🧪 Selected Filters]:', selected);
 
   const filteredFarms = filterFarms(allFarms, selected);
+
   console.log('[✅ FILTER] Showing farms:', filteredFarms.map(f => f.name));
+  console.log('🧭 Locations:', filteredFarms.map(f => f.location));
+  console.log('[🧪 Raw All Farms]:', allFarms);
+  console.log('[🧪 All Farm Locations]:', allFarms.map(f => f.location));
+  console.log('[🔎 Filtered Farms]:', filteredFarms.map(f => f.name));
+console.log('[🧭 Locations After Filter]:', filteredFarms.map(f => f.location));
+console.log('[🧪 Comparing selected vs farm.products]');
+allFarms.forEach(farm => {
+  console.log(farm.name, '→', farm.products);
+});
+
 
   removeMarkers();
   addMarkers(filteredFarms);
+  
 }
 
+loadFarms();
 document.querySelectorAll('input[type=checkbox]').forEach(cb => {
   cb.addEventListener('change', updateMap);
 });
 
-// SPA routing logic
 const sections = {
   home: document.getElementById('map-container'),
   about: document.getElementById('about-section'),
@@ -43,17 +68,17 @@ const sections = {
   admin: document.getElementById('admin-section'),
 };
 
-// Admin password modal
 const adminModal = document.createElement('div');
 adminModal.id = 'admin-password-modal';
-adminModal.style.display = 'none';
-adminModal.style.position = 'fixed';
-adminModal.style.top = '50%';
-adminModal.style.left = '50%';
-adminModal.style.transform = 'translate(-50%, -50%)';
-adminModal.style.background = 'white';
-adminModal.style.padding = '20px';
-adminModal.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+adminModal.style = `
+  display: none;
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+`;
 adminModal.innerHTML = `
   <h3>Admin Access</h3>
   <input type="password" id="admin-password-input" placeholder="Enter password" />
@@ -102,8 +127,7 @@ window.showSection = function (sectionId) {
 document.addEventListener('click', async (e) => {
   if (e.target.matches('[data-route]')) {
     e.preventDefault();
-    const route = e.target.getAttribute('data-route');
-    showSection(route);
+    showSection(e.target.getAttribute('data-route'));
   }
 
   if (e.target.matches('#logout-admin')) {
@@ -116,6 +140,7 @@ document.addEventListener('click', async (e) => {
     const id = e.target.dataset.id;
     await fetch(`/api/farms/${id}/approve`, { method: 'PATCH' });
     await loadFarms();
+    updateMap();
     loadAdminFarms();
   }
 
@@ -124,44 +149,67 @@ document.addEventListener('click', async (e) => {
     if (!confirm('Are you sure you want to delete this farm?')) return;
     await fetch(`/api/farms/${id}`, { method: 'DELETE' });
     await loadFarms();
+    updateMap();
     loadAdminFarms();
   }
 });
 
-// Add Farm form with geocoding
 const farmForm = document.getElementById('farmForm');
 if (farmForm) {
   farmForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(farmForm);
-    const address = formData.get('address');
 
-    const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=pk.eyJ1Ijoic2NvdHR5MzMiLCJhIjoiY20wbGowZnUzMDY2MTJxb3JjaWJ2dGFwNSJ9.56ueUqG22q5Qzp0FSr8YAA`;
+    let coordinates;
+    try {
+      const loc = formData.get('location');
+      coordinates = JSON.parse(loc);
+      if (!Array.isArray(coordinates) || coordinates.length !== 2) {
+        throw new Error('Invalid coordinates');
+      }
+    } catch {
+      document.getElementById('formMessage').textContent = '❌ Please select a valid address from the dropdown.';
+      return;
+    }
+
+    const products = Array.from(farmForm.querySelectorAll('input[name="products"]:checked'))
+  .map(cb => cb.value.toLowerCase().trim());
+  console.log('[🚀 Submitting Products]:', products);
+
+
+    if (products.length === 0) {
+      document.getElementById('formMessage').textContent = '❌ Please select at least one product.';
+      return;
+    }
+
+    let website = formData.get('website').trim();
+    if (website && !website.startsWith('http')) {
+      website = 'https://www.' + website.replace(/^www\./, '');
+    }
+
+    const data = {
+      name: formData.get('name'),
+      bio: formData.get('bio'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      website,
+      products,
+      location: {
+        type: 'Point',
+        coordinates: coordinates
+      }
+    };
 
     try {
-      const geoRes = await fetch(geocodeUrl);
-      const geoData = await geoRes.json();
-      if (!geoData.features.length) throw new Error('Address not found');
-      const coordinates = geoData.features[0].center;
-
-      const data = {
-        name: formData.get('name'),
-        bio: formData.get('bio'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        website: formData.get('website'),
-        products: formData.get('products').split(',').map(p => p.trim()),
-        location: coordinates
-      };
-
       const res = await fetch('/api/farms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'Submission failed');
+
       document.getElementById('formMessage').textContent = '✅ Farm submitted successfully!';
       farmForm.reset();
     } catch (err) {
@@ -171,7 +219,6 @@ if (farmForm) {
   });
 }
 
-// Admin dashboard rendering + blur-based editing
 async function loadAdminFarms() {
   const adminList = document.getElementById('admin-list');
   if (!adminList) return;
@@ -189,6 +236,7 @@ async function loadAdminFarms() {
         <div><strong>Email:</strong> <span contenteditable="true" data-field="email" data-id="${farm._id}">${farm.email || ''}</span></div>
         <div><strong>Phone:</strong> <span contenteditable="true" data-field="phone" data-id="${farm._id}">${farm.phone || ''}</span></div>
         <div><strong>Website:</strong> <span contenteditable="true" data-field="website" data-id="${farm._id}">${farm.website || ''}</span></div>
+        <div><strong>Location:</strong> <span contenteditable="true" data-field="location" data-id="${farm._id}">${farm.location?.coordinates?.join(', ') || ''}</span></div>
         <p><strong>Approved:</strong> ${farm.isApproved ? '✅' : '❌'}</p>
         <button data-id="${farm._id}" class="approve-btn">Approve</button>
         <button data-id="${farm._id}" class="delete-btn">Delete</button>
@@ -198,33 +246,45 @@ async function loadAdminFarms() {
         <button id="logout-admin">Log Out of Admin</button>
       </div>
     `;
-
+    
     adminList.querySelectorAll('[contenteditable][data-id]').forEach(el => {
       el.addEventListener('blur', async () => {
         const id = el.dataset.id;
         const field = el.dataset.field;
-        const value = el.innerText.trim();
-
-        const body = {
-          [field]: field === 'products'
-            ? value.split(',').map(p => p.trim())
-            : value
-        };
-
+        let value = el.innerText.trim();
+    
+        // Special cases
+        if (field === 'products') {
+          value = value.split(',').map(p => p.trim());
+        }
+    
+        if (field === 'location') {
+          try {
+            value = value.split(',').map(n => parseFloat(n.trim()));
+            if (!Array.isArray(value) || value.length !== 2 || value.some(isNaN)) throw new Error();
+            value = { type: 'Point', coordinates: value };
+          } catch {
+            alert('❌ Invalid location format. Use format like: -111.47, 40.51');
+            return;
+          }
+        }
+    
         try {
           const res = await fetch(`/api/farms/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+            body: JSON.stringify({ [field]: value })
           });
           if (!res.ok) throw new Error('Failed to update');
           console.log(`✅ Saved ${field} for ${id}`);
+          await loadFarms();
+          updateMap();
         } catch (err) {
           console.error(`[❌ Save Error] ${field}`, err);
         }
       });
     });
-
+    
   } catch (err) {
     adminList.innerHTML = '❌ Failed to load farms';
   }

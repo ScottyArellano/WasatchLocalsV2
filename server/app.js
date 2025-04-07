@@ -106,15 +106,42 @@ app.post('/api/auth/login', [
 // ======================
 
 // Submit new farm (public)
+// Submit new farm (public)
 app.post('/api/farms', async (req, res) => {
+  console.log('🔵 POST /api/farms HIT');
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+
   try {
-    const newFarm = new Farm(req.body);
+    const { name, location, products, bio, phone, email, website, hours } = req.body;
+
+    // Optional: validate required fields
+    if (!name || !location || !products || !bio || !phone || !email) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const newFarm = new Farm({
+      name,
+      location,
+      products,
+      bio,
+      phone,
+      email,
+      website,
+      hours,
+      isApproved: false
+    });
+
     const savedFarm = await newFarm.save();
-    res.status(201).json(savedFarm);
+    console.log('✅ Farm saved:', savedFarm._id);
+
+    res.status(201).json({ message: 'Farm created', farm: savedFarm });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to create farm' });
+    console.error('❌ Error in /api/farms:', error);
+    res.status(500).json({ message: 'Failed to create farm', error: error.message });
   }
 });
+
 
 // Get all farms
 app.get('/api/farms', async (req, res) => {

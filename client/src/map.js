@@ -1,5 +1,6 @@
+import mapboxgl from 'mapbox-gl';
 import { productColorMap } from './farms.js';
-import { createPopup, initCarousel } from '../ui.js';
+import { createPopup, initCarousel } from './ui.js';
 
 let map;
 let currentMarkers = [];
@@ -30,14 +31,39 @@ export function initMap() {
 }
 
 export function addMarkers(farms) {
+  console.log('[🧪 addMarkers] Incoming farms:', farms);
+
   farms.forEach(farm => {
     const primaryProduct = farm.products[0];
     const color = productColorMap[primaryProduct] || "#000000";
 
+    // ✅ Normalize location data
+    let coords = null;
+    if (Array.isArray(farm.location)) {
+      coords = farm.location;
+    } else if (
+      farm.location &&
+      farm.location.type === 'Point' &&
+      Array.isArray(farm.location.coordinates)
+    ) {
+      coords = farm.location.coordinates;
+    }
+
+    // ❌ Skip invalid coords
+    if (!coords || coords.length !== 2 || typeof coords[0] !== 'number') {
+      console.warn(`❌ Skipping farm due to invalid coordinates:`, farm);
+      return;
+    }
+
+    console.log(`[📍 ${farm.name}] location:`, farm.location);
+    console.log(`[📍 ${farm.name}] coords used:`, coords);
+
+    // 🧭 Place Marker
     const marker = new mapboxgl.Marker({ color })
-      .setLngLat(farm.location)
+      .setLngLat(coords)
       .addTo(map);
 
+    // 💬 Set up popup
     const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, closeOnClick: true })
       .setHTML(createPopup(farm));
 
