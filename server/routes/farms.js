@@ -2,29 +2,42 @@ const express = require('express');
 const router = express.Router();
 const Farm = require('../models/Farm');
 
-// POST route to handle farm submissions
+// 🔁 Create a new farm (POST /api/farms)
 router.post('/farms', async (req, res) => {
   try {
     console.log('🔵 Received farm data:', req.body);
 
-    let { name, location, products, bio, phone, email, website, hours, captcha } = req.body;
+    let {
+      name,
+      location,
+      products,
+      bio,
+      phone,
+      email,
+      website,
+      hours,
+      photos,
+      captcha,
+    } = req.body;
 
-    // Validate required fields
+    console.log('📸 Backend photos array:', photos);
+
+    // 🔒 Basic field validation
     if (!name || !location || !products || !bio || !phone || !email) {
       return res.status(400).json({ message: 'All required fields must be provided.' });
     }
 
-    // CAPTCHA check (placeholder logic)
-    if (captcha !== '1234') {
+    // 🔐 CAPTCHA validation (optional)
+    if (captcha && captcha !== '1234') {
       return res.status(400).json({ message: 'Invalid CAPTCHA.' });
     }
 
-    // Normalize website: add https:// if missing
+    // 🌐 Ensure website has protocol
     if (website && !/^https?:\/\//i.test(website)) {
       website = 'https://' + website;
     }
 
-    // Normalize location format
+    // 🧭 Normalize location format
     if (typeof location === 'string') {
       try {
         location = JSON.parse(location);
@@ -43,18 +56,17 @@ router.post('/farms', async (req, res) => {
       location = location.coordinates;
     }
 
-    console.log('🧭 Final parsed location:', location);
-
-    // Create and save new farm
+    // ✅ Build and save new farm
     const newFarm = new Farm({
       name,
-      location,
+      location: { type: 'Point', coordinates: location },
       products,
       bio,
       phone,
       email,
       website,
       hours,
+      photos: Array.isArray(photos) ? photos : [],
       isApproved: false,
     });
 
@@ -71,7 +83,7 @@ router.post('/farms', async (req, res) => {
   }
 });
 
-// GET all farms
+// 🧠 Get all farms (GET /api/farms)
 router.get('/farms', async (req, res) => {
   try {
     const farms = await Farm.find();
@@ -81,12 +93,12 @@ router.get('/farms', async (req, res) => {
   }
 });
 
-// GET single farm by ID
+// 🧠 Get a single farm (GET /api/farms/:id)
 router.get('/farms/:id', getFarm, (req, res) => {
   res.json(res.farm);
 });
 
-// Middleware: get farm by ID
+// 🔍 Middleware: Load farm by ID
 async function getFarm(req, res, next) {
   try {
     const farm = await Farm.findById(req.params.id);

@@ -2,6 +2,9 @@ import { initMap, addMarkers, removeMarkers } from './map.js';
 import { filterFarms } from './filter.js';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import { showDetails } from './ui.js';
+
+window.showDetails = showDetails;
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2NvdHR5MzMiLCJhIjoiY20wbGowZnUzMDY2MTJxb3JjaWJ2dGFwNSJ9.56ueUqG22q5Qzp0FSr8YAA';
 
@@ -9,7 +12,7 @@ const geocoder = new MapboxGeocoder({
   accessToken: mapboxgl.accessToken,
   types: 'address',
   placeholder: 'Enter your farm address',
-  mapboxgl: mapboxgl,
+  mapboxgl,
 });
 geocoder.addTo('#geocoder');
 
@@ -20,47 +23,37 @@ geocoder.on('result', (e) => {
 
 let map = initMap();
 let allFarms = [];
+window.allFarms = allFarms;
 
 async function loadFarms() {
   try {
     const res = await fetch('/api/farms');
     const data = await res.json();
     allFarms = data.filter(f => f.isApproved);
+    window.allFarms = allFarms;
     updateMap();
   } catch (err) {
     console.error('[❌ FETCH ERROR] Could not load farms:', err);
   }
 }
 
+
 function updateMap() {
   const selected = Array.from(document.querySelectorAll('input[type=checkbox]:checked'))
-  .map(cb => cb.value.toLowerCase().trim());
-  console.log('[🧪 Selected Filters]:', selected);
-
+    .map(cb => cb.value.toLowerCase().trim());
   const filteredFarms = filterFarms(allFarms, selected);
-
-  console.log('[✅ FILTER] Showing farms:', filteredFarms.map(f => f.name));
-  console.log('🧭 Locations:', filteredFarms.map(f => f.location));
-  console.log('[🧪 Raw All Farms]:', allFarms);
-  console.log('[🧪 All Farm Locations]:', allFarms.map(f => f.location));
-  console.log('[🔎 Filtered Farms]:', filteredFarms.map(f => f.name));
-console.log('[🧭 Locations After Filter]:', filteredFarms.map(f => f.location));
-console.log('[🧪 Comparing selected vs farm.products]');
-allFarms.forEach(farm => {
-  console.log(farm.name, '→', farm.products);
-});
-
 
   removeMarkers();
   addMarkers(filteredFarms);
-  
 }
 
-loadFarms();
 document.querySelectorAll('input[type=checkbox]').forEach(cb => {
   cb.addEventListener('change', updateMap);
 });
 
+loadFarms();
+
+// SPA Navigation
 const sections = {
   home: document.getElementById('map-container'),
   about: document.getElementById('about-section'),
@@ -68,47 +61,43 @@ const sections = {
   admin: document.getElementById('admin-section'),
 };
 
-const adminModal = document.createElement('div');
-adminModal.id = 'admin-password-modal';
-adminModal.style = `
-  display: none;
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-`;
-adminModal.innerHTML = `
-  <h3>Admin Access</h3>
-  <input type="password" id="admin-password-input" placeholder="Enter password" />
-  <button id="submit-admin-password">Submit</button>
-  <button id="cancel-admin-password">Cancel</button>
-`;
-document.body.appendChild(adminModal);
-
 function promptAdminPassword(callback) {
-  adminModal.style.display = 'block';
+  const adminModal = document.createElement('div');
+  adminModal.id = 'admin-password-modal';
+  adminModal.style = `
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: white; padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+  `;
+  adminModal.innerHTML = `
+    <h3>Admin Access</h3>
+    <input type="password" id="admin-password-input" placeholder="Enter password" />
+    <button id="submit-admin-password">Submit</button>
+    <button id="cancel-admin-password">Cancel</button>
+  `;
+  document.body.appendChild(adminModal);
+
   document.getElementById('submit-admin-password').onclick = () => {
     const input = document.getElementById('admin-password-input').value;
-    adminModal.style.display = 'none';
+    adminModal.remove();
     callback(input);
   };
+
   document.getElementById('cancel-admin-password').onclick = () => {
-    adminModal.style.display = 'none';
+    adminModal.remove();
     callback(null);
   };
 }
 
 window.showSection = function (sectionId) {
-  console.log(`🔁 Navigating to section: ${sectionId}`);
   Object.values(sections).forEach(sec => (sec.style.display = 'none'));
 
   if (sectionId === 'admin' && !localStorage.getItem('adminToken')) {
     promptAdminPassword(password => {
       if (password !== 'letmein') {
         alert('❌ Incorrect code');
-        console.log('🔒 Admin access blocked');
         return;
       }
       localStorage.setItem('adminToken', 'true');
@@ -124,6 +113,7 @@ window.showSection = function (sectionId) {
   }
 };
 
+// Handle Routing + Admin Buttons
 document.addEventListener('click', async (e) => {
   if (e.target.matches('[data-route]')) {
     e.preventDefault();
@@ -154,6 +144,7 @@ document.addEventListener('click', async (e) => {
   }
 });
 
+// 🚀 Add Farm Form Submit
 const farmForm = document.getElementById('farmForm');
 if (farmForm) {
   farmForm.addEventListener('submit', async (e) => {
@@ -162,20 +153,15 @@ if (farmForm) {
 
     let coordinates;
     try {
-      const loc = formData.get('location');
-      coordinates = JSON.parse(loc);
-      if (!Array.isArray(coordinates) || coordinates.length !== 2) {
-        throw new Error('Invalid coordinates');
-      }
+      coordinates = JSON.parse(formData.get('location'));
+      if (!Array.isArray(coordinates) || coordinates.length !== 2) throw new Error();
     } catch {
       document.getElementById('formMessage').textContent = '❌ Please select a valid address from the dropdown.';
       return;
     }
 
     const products = Array.from(farmForm.querySelectorAll('input[name="products"]:checked'))
-  .map(cb => cb.value.toLowerCase().trim());
-  console.log('[🚀 Submitting Products]:', products);
-
+      .map(cb => cb.value.toLowerCase().trim());
 
     if (products.length === 0) {
       document.getElementById('formMessage').textContent = '❌ Please select at least one product.';
@@ -187,6 +173,37 @@ if (farmForm) {
       website = 'https://www.' + website.replace(/^www\./, '');
     }
 
+    const cloudName = 'dsxhuulne';
+    const uploadPreset = 'wasatch_unsigned';
+    const photoInput = document.getElementById('photoUpload');
+    const files = photoInput?.files || [];
+    const photoURLs = [];
+
+    if (files.length > 0) {
+      const uploads = Array.from(files).slice(0, 5).map(file => {
+        const imgFormData = new FormData();
+        imgFormData.append('file', file);
+        imgFormData.append('upload_preset', uploadPreset);
+
+        return fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: imgFormData,
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log('[🌤️ Cloudinary response]:', data);
+            if (data.secure_url) {
+              photoURLs.push(data.secure_url);
+            }
+          })
+          .catch(err => console.error('❌ Cloudinary upload error:', err));
+      });
+
+      await Promise.all(uploads);
+    }
+
+    console.log('[📸 Uploaded Photo URLs]:', photoURLs);
+
     const data = {
       name: formData.get('name'),
       bio: formData.get('bio'),
@@ -196,9 +213,12 @@ if (farmForm) {
       products,
       location: {
         type: 'Point',
-        coordinates: coordinates
-      }
+        coordinates
+      },
+      photos: photoURLs,
     };
+
+    console.log('[📤 Sending Farm Data]:', data);
 
     try {
       const res = await fetch('/api/farms', {
@@ -209,7 +229,6 @@ if (farmForm) {
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.message || 'Submission failed');
-
       document.getElementById('formMessage').textContent = '✅ Farm submitted successfully!';
       farmForm.reset();
     } catch (err) {
@@ -219,11 +238,12 @@ if (farmForm) {
   });
 }
 
+// 🛠️ Admin Panel Loader
 async function loadAdminFarms() {
   const adminList = document.getElementById('admin-list');
   if (!adminList) return;
-
   adminList.innerHTML = 'Loading...';
+
   try {
     const res = await fetch('/api/farms');
     const farms = await res.json();
@@ -237,27 +257,30 @@ async function loadAdminFarms() {
         <div><strong>Phone:</strong> <span contenteditable="true" data-field="phone" data-id="${farm._id}">${farm.phone || ''}</span></div>
         <div><strong>Website:</strong> <span contenteditable="true" data-field="website" data-id="${farm._id}">${farm.website || ''}</span></div>
         <div><strong>Location:</strong> <span contenteditable="true" data-field="location" data-id="${farm._id}">${farm.location?.coordinates?.join(', ') || ''}</span></div>
+    
+        ${farm.photos && farm.photos.length ? `
+          <div class="admin-photo-preview">
+            ${farm.photos.map(url => `<img src="${url}" alt="Photo" style="max-height:100px; margin:4px;">`).join('')}
+          </div>
+        ` : '<p>No photos uploaded</p>'}
+    
         <p><strong>Approved:</strong> ${farm.isApproved ? '✅' : '❌'}</p>
         <button data-id="${farm._id}" class="approve-btn">Approve</button>
         <button data-id="${farm._id}" class="delete-btn">Delete</button>
       </div>
-    `).join('') + `
-      <div style="margin-top: 20px;">
-        <button id="logout-admin">Log Out of Admin</button>
-      </div>
-    `;
+    `).join('') + `<div style="margin-top:20px;"><button id="logout-admin">Log Out of Admin</button></div>`;
     
+
     adminList.querySelectorAll('[contenteditable][data-id]').forEach(el => {
       el.addEventListener('blur', async () => {
         const id = el.dataset.id;
         const field = el.dataset.field;
         let value = el.innerText.trim();
-    
-        // Special cases
+
         if (field === 'products') {
           value = value.split(',').map(p => p.trim());
         }
-    
+
         if (field === 'location') {
           try {
             value = value.split(',').map(n => parseFloat(n.trim()));
@@ -268,7 +291,7 @@ async function loadAdminFarms() {
             return;
           }
         }
-    
+
         try {
           const res = await fetch(`/api/farms/${id}`, {
             method: 'PUT',
@@ -276,7 +299,6 @@ async function loadAdminFarms() {
             body: JSON.stringify({ [field]: value })
           });
           if (!res.ok) throw new Error('Failed to update');
-          console.log(`✅ Saved ${field} for ${id}`);
           await loadFarms();
           updateMap();
         } catch (err) {
@@ -284,7 +306,7 @@ async function loadAdminFarms() {
         }
       });
     });
-    
+
   } catch (err) {
     adminList.innerHTML = '❌ Failed to load farms';
   }

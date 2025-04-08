@@ -1,3 +1,4 @@
+
 const emojiMap = {
     "beef": "🐄",
     "dairy": "🧀",
@@ -38,7 +39,7 @@ const emojiMap = {
     `;
   }
   
-  export function showDetails(id, farms) {
+  export function showDetails(id, farms = window.allFarms) {
     const farm = farms.find(farm => farm.id === id);
     if (farm) {
       const emojiProducts = farm.products.map(

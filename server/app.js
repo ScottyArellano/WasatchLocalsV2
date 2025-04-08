@@ -24,7 +24,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
 // ======================
@@ -106,16 +106,14 @@ app.post('/api/auth/login', [
 // ======================
 
 // Submit new farm (public)
-// Submit new farm (public)
 app.post('/api/farms', async (req, res) => {
   console.log('🔵 POST /api/farms HIT');
   console.log('Headers:', req.headers);
   console.log('Body:', req.body);
 
   try {
-    const { name, location, products, bio, phone, email, website, hours } = req.body;
+    const { name, location, products, bio, phone, email, website, hours, photos } = req.body;
 
-    // Optional: validate required fields
     if (!name || !location || !products || !bio || !phone || !email) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
@@ -129,6 +127,7 @@ app.post('/api/farms', async (req, res) => {
       email,
       website,
       hours,
+      photos: Array.isArray(photos) ? photos : [],
       isApproved: false
     });
 
@@ -141,7 +140,6 @@ app.post('/api/farms', async (req, res) => {
     res.status(500).json({ message: 'Failed to create farm', error: error.message });
   }
 });
-
 
 // Get all farms
 app.get('/api/farms', async (req, res) => {
