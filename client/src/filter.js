@@ -1,5 +1,11 @@
 export function filterFarms(farms, selectedProducts) {
-  if (!Array.isArray(farms) || !Array.isArray(selectedProducts)) return [];
+  if (!Array.isArray(farms)) {
+    throw new Error('Invalid farms input: expected an array.');
+  }
+
+  if (!Array.isArray(selectedProducts)) {
+    throw new Error('Invalid selectedProducts input: expected an array.');
+  }
 
   const selected = selectedProducts
     .filter(p => typeof p === 'string')

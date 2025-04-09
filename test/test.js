@@ -1,5 +1,7 @@
-import { filterFarms } from '../filter.js';;
-import assert from 'assert'; // works if you're running this in Node.js
+import { filterFarms } from '../client/src/filter.js';
+import assert from 'assert';
+
+
 
 
 describe('filterFarms Tests', () => {

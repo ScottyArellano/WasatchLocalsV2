@@ -105,6 +105,7 @@ app.post('/api/auth/login', [
 // FARM ROUTES
 // ======================
 
+<<<<<<< HEAD
 // Submit new farm (public)
 app.post('/api/farms', async (req, res) => {
   console.log('🔵 POST /api/farms HIT');
@@ -130,16 +131,63 @@ app.post('/api/farms', async (req, res) => {
       photos: Array.isArray(photos) ? photos : [],
       isApproved: false
     });
+=======
 
-    const savedFarm = await newFarm.save();
-    console.log('✅ Farm saved:', savedFarm._id);
+// Submit new farm (public)
 
-    res.status(201).json({ message: 'Farm created', farm: savedFarm });
-  } catch (error) {
-    console.error('❌ Error in /api/farms:', error);
-    res.status(500).json({ message: 'Failed to create farm', error: error.message });
+
+// Submit new farm (public)
+app.post(
+  '/api/farms',
+  [
+    check('name', 'Name is required').not().isEmpty().trim().escape(),
+    check('bio', 'Bio is required').not().isEmpty().trim().escape(),
+    check('email', 'Email is required').isEmail(),
+    check('phone', 'Phone is required').not().isEmpty(),
+    check('website', 'Website is required').optional().isURL(),
+    
+    // Products: Ensure it's a non-empty array of valid strings
+    check('products', 'Products must be a non-empty array').isArray({ min: 1 }),
+    check('products.*', 'Each product must be a string').isString(),
+    
+    // Location: Ensure location exists and has proper coordinates
+    check('location', 'Location is required').not().isEmpty(),
+    check('location.coordinates', 'Coordinates must be an array of numbers').isArray().withMessage('Coordinates should be an array').bail()
+    .custom((value) => {
+      if (value.length !== 2 || !value.every(val => !isNaN(val))) {
+        throw new Error('Coordinates should contain exactly two numeric values.');
+      }
+      return true;
+    }),
+
+    // Photos: Each should be a valid URL if provided
+    check('photos', 'Photos must be an array of URLs').optional().isArray(),
+    check('photos.*', 'Each photo URL must be a valid URL').optional().isURL()
+  ],
+  async (req, res) => {
+    // Handle validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const newFarm = new Farm({
+        ...req.body,
+        isApproved: false,
+      });
+>>>>>>> dev
+
+      const savedFarm = await newFarm.save();
+      res.status(201).json({ message: 'Farm created', farm: savedFarm });
+    } catch (error) {
+      console.error('Error in /api/farms:', error);
+      res.status(500).json({ message: 'Failed to create farm', error: error.message });
+    }
   }
-});
+);
+
+
 
 // Get all farms
 app.get('/api/farms', async (req, res) => {
@@ -195,6 +243,14 @@ app.delete('/api/farms/:id', async (req, res) => {
 // ======================
 // Start server
 // ======================
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// ...all your setup code...
+
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+
+
