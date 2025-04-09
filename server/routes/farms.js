@@ -1,39 +1,55 @@
 const express = require('express');
 const router = express.Router();
 const Farm = require('../models/Farm');
+const { body, validationResult } = require('express-validator');
 
-// POST route to handle farm submissions
-router.post('/farms', async (req, res) => {
+// ✅ Validation Middleware
+const validateFarm = [
+  body('name').notEmpty().withMessage('Name is required'),
+  body('location').custom((value) => {
+    const coords = Array.isArray(value)
+      ? value
+      : value?.coordinates;
+
+    if (
+      coords &&
+      Array.isArray(coords) &&
+      coords.length === 2 &&
+      typeof coords[0] === 'number' &&
+      typeof coords[1] === 'number'
+    ) {
+      return true;
+    }
+    throw new Error('Coordinates should contain exactly two numeric values.');
+  }),
+  body('products').isArray({ min: 1 }).withMessage('Products must be a non-empty array'),
+  body('photos').isArray().withMessage('Photos must be an array'),
+  body('photos.*').isURL().withMessage('Each photo URL must be a valid URL'),
+];
+
+// ✅ POST route to handle farm submissions
+router.post('/farms', validateFarm, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    console.log('🔵 Received farm data:', req.body);
-
     let { name, location, products, bio, phone, email, website, hours, captcha } = req.body;
 
-    // Validate required fields
-    if (!name || !location || !products || !bio || !phone || !email) {
-      return res.status(400).json({ message: 'All required fields must be provided.' });
-    }
-
     // CAPTCHA check (placeholder logic)
-    if (captcha !== '1234') {
+    if (captcha && captcha !== '1234') {
       return res.status(400).json({ message: 'Invalid CAPTCHA.' });
     }
 
-    // Normalize website: add https:// if missing
+    // Normalize website
     if (website && !/^https?:\/\//i.test(website)) {
       website = 'https://' + website;
     }
 
     // Normalize location format
     if (typeof location === 'string') {
-      try {
-        location = JSON.parse(location);
-        if (!Array.isArray(location) || location.length !== 2) {
-          return res.status(400).json({ message: 'Invalid location format.' });
-        }
-      } catch {
-        return res.status(400).json({ message: 'Failed to parse location.' });
-      }
+      location = JSON.parse(location);
     } else if (
       typeof location === 'object' &&
       location !== null &&
@@ -43,9 +59,6 @@ router.post('/farms', async (req, res) => {
       location = location.coordinates;
     }
 
-    console.log('🧭 Final parsed location:', location);
-
-    // Create and save new farm
     const newFarm = new Farm({
       name,
       location,
